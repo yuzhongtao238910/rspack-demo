@@ -1,0 +1,31 @@
+{
+  "name": "vue2-demo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "cross-env NODE_ENV=dev mode=development rspack dev",
+    "build:prod": "cross-env NODE_ENV=prod mode=production rspack build",
+    "build:pre": "cross-env NODE_ENV=pre mode=production rspack build",
+    "build:test": "cross-env NODE_ENV=test mode=production rspack build",
+    "build:dev": "cross-env NODE_ENV=dev mode=production rspack build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "vue": "^2.7.16",
+    "vue-router": "^3.6.5"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "css-loader": "^7.1.2",
+    "dotenv": "^16.4.7",
+    "less": "^4.2.2",
+    "less-loader": "^12.2.0",
+    "sass-embedded": "^1.85.0",
+    "sass-loader": "^16.0.5",
+    "style-loader": "^4.0.0",
+    "vue-loader": "^15.11.1"
+  }
+}
