@@ -10,6 +10,7 @@ dotenv.config({ path: envPath });
 
 const isProduction = process.env.mode === 'production'
 
+
 /** @type {import('@rspack/cli').Configuration} */
 const config = {
     context: __dirname,
@@ -39,15 +40,24 @@ const config = {
         new rspack.HtmlRspackPlugin({
             template: './index.html',
             templateParameters: ({htmlRspackPlugin}) => {
+              // 获取所有生成的文件
+              const files = htmlRspackPlugin.files;
+              const prefetchTags = files.js.concat(files.css)
+                .map(file => {
+                  return `<link rel="prefetch" href="${file}" />`;
+                })
+                .join('\n');
               return {
                   sdkHost: "https://test-admin.edianzu.cn",
+                  prefetchTags
               }
             }
         }),
         new rspack.DefinePlugin({
             'process.env': JSON.stringify(process.env),
         }),
-        new rspack.CssExtractRspackPlugin({})
+        new rspack.CssExtractRspackPlugin({}),
+        InjectContentPlugin
     ],
     module: {
         rules: [
