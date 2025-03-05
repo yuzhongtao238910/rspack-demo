@@ -14,13 +14,16 @@
 	</div>
 </template>
 <script>
+import axios from "axios";
 import HelloWorld from "./components/HelloWorld.vue";
 export default {
 	components: { 
         HelloWorld 
     },
     mounted() {
-        console.log(process.env)
+        axios.get("/api/list").then((res) => {
+            console.log(res)
+        })
     }
 };
 </script>

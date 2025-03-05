@@ -4,13 +4,8 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <%= prefetchTags %>
-  <title>Vue</title>
-  <script>
-    // 使用传递的 sdkHost 参数
-    window.sdkHost = "<%= sdkHost %>";
-    console.log("SDK Host:", window.sdkHost);
-  </script>
+  <title>于忠涛-vue2-rspack</title>
+  <link rel="preconnect" href="<%= sdkHost %>">
 </head>
 <body>
   <div id="app"></div>
