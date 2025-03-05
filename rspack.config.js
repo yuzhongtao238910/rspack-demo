@@ -14,6 +14,8 @@ const isProduction = process.env.mode === 'production'
 
 const hasADDPrefetch = []
 
+let runtimeContent = ''
+
 
 const AddAttributePlugin = {
     apply(compiler) {
@@ -22,6 +24,12 @@ const AddAttributePlugin = {
                 compilation,
             ).alterAssetTags.tapPromise('AddAttributePlugin', async pluginArgs => {
                 pluginArgs.assetTags.scripts = pluginArgs.assetTags.scripts.map(tag => {
+                    console.log(tag.attributes.src, 120)
+                    if (tag.attributes.src && tag.attributes.src.includes('runtime')) {
+                        runtimeContent = compilation.assets[tag.attributes.src] ? compilation.assets[tag.attributes.src].source() : '';
+                        console.log(runtimeContent, 120)
+                        return tag;
+                    }
                     if (tag.tagName === 'script') {
                         tag.attributes.prefetch = true;
                     }
@@ -30,8 +38,8 @@ const AddAttributePlugin = {
                     }
                     hasADDPrefetch.push(tag.attributes.src)
                     return tag;
-                });
-            });
+                }).filter(tag => !tag.attributes.src.includes('runtime'));
+            })
         });
     },
 };
@@ -48,8 +56,39 @@ const InjectContentPlugin = {
                     const jsFiles = allAssets
                         .filter(asset => asset.name.endsWith('.js'))
                         .map(asset => asset.name);
-                    const notAddedFiles = jsFiles.filter(file => !hasADDPrefetch.includes(file));
+                    const notAddedFiles = jsFiles.filter(file => !hasADDPrefetch.includes(file) && !file.includes('runtime'));
                     const scriptTags = notAddedFiles.map(file => `<script prefetch src="${file}"></script>`).join('\n');
+                    // 删除含有runtime的script标签
+                    // 检查是否成功删除runtime脚本标签
+                    console.log('删除前的HTML:', pluginArgs.html);
+                    // 删除runtime脚本标签
+                    // pluginArgs.html = pluginArgs.html.replace(/<script[^>]*?runtime.*?<\/script>/, '');
+                    // console.log('删除后的HTML:', pluginArgs.html);
+                    // pluginArgs.html = pluginArgs.html.replace(/<script[^>]*?defer[^>]*?runtime.*?<\/script>/g, '');
+                    // 删除含有runtime的script标签                    
+                    // 添加其他script标签
+                    // 在插入runtime内容之前，设置publicPath
+                    // const publicPath = process.env.PUBLIC_PATH || '/';
+                    // if (runtimeContent) {
+                    //     // 在runtime内容前添加publicPath设置
+                    //     runtimeContent = `window.__webpack_public_path__ = '${publicPath}';${runtimeContent}`;
+                    // }
+
+                    // 将runtime内容添加为内联脚本到head标签中
+                    if (runtimeContent) {
+                        // 找到head标签的开始位置
+                        
+                        // 找到body标签的开始位置
+                        const bodyStartIndex = pluginArgs.html.indexOf('<body>');
+                        if (bodyStartIndex !== -1) {
+                            // 在body标签后插入runtime内容
+                            pluginArgs.html = pluginArgs.html.slice(0, bodyStartIndex + 6) + 
+                                `<script>${runtimeContent}</script>` +
+                                pluginArgs.html.slice(bodyStartIndex + 6);
+                        }
+                    }
+
+
                     pluginArgs.html = pluginArgs.html.replace(
                         '</body>',
                         `${scriptTags}\n</body>`
@@ -72,6 +111,7 @@ const config = {
         clean: true,
         filename: '[name].[chunkhash].js',
         chunkFilename: 'chunk.[name].[chunkhash].js',
+        // publicPath: '/',
     },
     experiments: {
         css: false,
@@ -100,9 +140,13 @@ const config = {
         new VueLoaderPlugin(),
         new rspack.HtmlRspackPlugin({
             template: './index.html',
+            // publicPath: '/',
+            minify: false,
             templateParameters: ({htmlRspackPlugin}) => {
                 return {
-                    sdkHost: "https://test-admin.edianzu.cn"
+                    // 注入变量哈
+                    sdkHost: "https://test-admin.edianzu.cn",
+                    host: "http://localhost:8080"
                 }
             }
         }),
@@ -111,7 +155,13 @@ const config = {
         }),
         new rspack.CssExtractRspackPlugin({}),
         AddAttributePlugin,
-        InjectContentPlugin
+        InjectContentPlugin,
+        new rspack.optimize.RuntimeChunkPlugin({
+            name: ({ name }) => {
+                console.log(name, 120)
+                return `runtime~${name}`
+            },
+        }),
     ],
     module: {
         rules: [
