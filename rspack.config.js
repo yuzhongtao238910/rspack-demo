@@ -82,6 +82,15 @@ const InjectContentPlugin = {
                         const bodyStartIndex = pluginArgs.html.indexOf('<body>');
                         if (bodyStartIndex !== -1) {
                             // 在body标签后插入runtime内容
+                            // 在插入runtime内容后，从compilation中删除runtime文件
+                            const runtimeFiles = allAssets
+                                .filter(asset => asset.name.includes('runtime'))
+                                .map(asset => asset.name);
+                            
+                            runtimeFiles.forEach(filename => {
+                                // 从compilation中删除runtime文件
+                                compilation.deleteAsset(filename);
+                            });
                             pluginArgs.html = pluginArgs.html.slice(0, bodyStartIndex + 6) + 
                                 `<script>${runtimeContent}</script>` +
                                 pluginArgs.html.slice(bodyStartIndex + 6);
