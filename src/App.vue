@@ -21,9 +21,9 @@ export default {
         HelloWorld 
     },
     mounted() {
-        axios.get("/api/list").then((res) => {
-            console.log(res)
-        })
+        // axios.get("/api/list").then((res) => {
+        //     console.log(res)
+        // })
     }
 };
 </script>

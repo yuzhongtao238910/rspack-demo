@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "cross-env NODE_ENV=dev mode=development rspack dev",
+    "dev": "cross-env NODE_ENV=development mode=development rspack dev",
     "build:prod": "cross-env NODE_ENV=prod mode=production rspack build",
     "build:pre": "cross-env NODE_ENV=pre mode=production rspack build",
     "build:test": "cross-env NODE_ENV=test mode=production rspack build",
@@ -15,6 +15,7 @@
   "description": "",
   "dependencies": {
     "axios": "^1.8.1",
+    "express": "^5.0.0-beta.2",
     "vue": "^2.7.16",
     "vue-router": "^3.6.5"
   },

@@ -24,10 +24,10 @@ const AddAttributePlugin = {
                 compilation,
             ).alterAssetTags.tapPromise('AddAttributePlugin', async pluginArgs => {
                 pluginArgs.assetTags.scripts = pluginArgs.assetTags.scripts.map(tag => {
-                    console.log(tag.attributes.src, 120)
+                    // console.log(tag.attributes.src, 120)
                     if (tag.attributes.src && tag.attributes.src.includes('runtime')) {
                         runtimeContent = compilation.assets[tag.attributes.src] ? compilation.assets[tag.attributes.src].source() : '';
-                        console.log(runtimeContent, 120)
+                        // console.log(runtimeContent, 120)
                         return tag;
                     }
                     if (tag.tagName === 'script') {
@@ -74,27 +74,30 @@ const InjectContentPlugin = {
                     //     runtimeContent = `window.__webpack_public_path__ = '${publicPath}';${runtimeContent}`;
                     // }
 
+                    console.log(runtimeContent, 120)
+
                     // 将runtime内容添加为内联脚本到head标签中
                     if (runtimeContent) {
-                        // 找到head标签的开始位置
+                        pluginArgs.html = pluginArgs.html.replace('</body>', `<script>${runtimeContent}</script></body>`);
+                    //     // 找到head标签的开始位置
                         
-                        // 找到body标签的开始位置
-                        const bodyStartIndex = pluginArgs.html.indexOf('<body>');
-                        if (bodyStartIndex !== -1) {
-                            // 在body标签后插入runtime内容
-                            // 在插入runtime内容后，从compilation中删除runtime文件
-                            const runtimeFiles = allAssets
-                                .filter(asset => asset.name.includes('runtime'))
-                                .map(asset => asset.name);
+                    //     // 找到body标签的开始位置
+                    //     const bodyStartIndex = pluginArgs.html.indexOf('<body>');
+                    //     if (bodyStartIndex !== -1) {
+                    //         // 在body标签后插入runtime内容
+                    //         // 在插入runtime内容后，从compilation中删除runtime文件
+                    //         const runtimeFiles = allAssets
+                    //             .filter(asset => asset.name.includes('runtime'))
+                    //             .map(asset => asset.name);
                             
-                            runtimeFiles.forEach(filename => {
-                                // 从compilation中删除runtime文件
-                                compilation.deleteAsset(filename);
-                            });
-                            pluginArgs.html = pluginArgs.html.slice(0, bodyStartIndex + 6) + 
-                                `<script>${runtimeContent}</script>` +
-                                pluginArgs.html.slice(bodyStartIndex + 6);
-                        }
+                    //         runtimeFiles.forEach(filename => {
+                    //             // 从compilation中删除runtime文件
+                    //             compilation.deleteAsset(filename);
+                    //         });
+                    //         pluginArgs.html = pluginArgs.html.slice(0, bodyStartIndex + 6) + 
+                    //             `<script>${runtimeContent}</script>` +
+                    //             pluginArgs.html.slice(bodyStartIndex + 6);
+                    //     }
                     }
 
 
@@ -163,15 +166,15 @@ const config = {
             'process.env': JSON.stringify(process.env),
         }),
         new rspack.CssExtractRspackPlugin({}),
-        AddAttributePlugin,
-        InjectContentPlugin,
+        isProduction ? AddAttributePlugin : null,
+        isProduction ? InjectContentPlugin : null,
         new rspack.optimize.RuntimeChunkPlugin({
             name: ({ name }) => {
                 console.log(name, 120)
                 return `runtime~${name}`
             },
         }),
-    ],
+    ].filter(Boolean),
     module: {
         rules: [
             {
